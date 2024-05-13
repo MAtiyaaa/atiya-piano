@@ -150,9 +150,9 @@ function GetNearestPianoLocation(coords)
     return nearestLocation
 end
 
-RegisterCommand("debugPiano", function()
-    TriggerEvent('debugPianoEvent')
-end, false)
+--RegisterCommand("debugPiano", function()
+    --TriggerEvent('debugPianoEvent')
+--end, false)
 
 
 RegisterNetEvent('debugPianoEvent', function()
