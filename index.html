@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="piano.ico" rel="icon">
+    <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.1/howler.min.js"></script>
+    <script src="script.js" defer></script>
+    <script>
+        var audioPlayer = null;
+        window.addEventListener('message', function(event) {
+            if (event.data.transactionType == "playSound") {
+                if (audioPlayer && typeof audioPlayer.stop === 'function') {
+                    audioPlayer.stop();
+                }
+                audioPlayer = new Howl({
+                    src: ["./notes/" + event.data.transactionFile + ".mp3"]
+                });
+                audioPlayer.volume(event.data.transactionVolume);
+                audioPlayer.play();
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="wrapper" style="display: none;">
+        <header>
+            <div class="column volume-slider">
+                <span>Volume</span>
+                <input type="range" min="0" max="1" value="0.5" step="any">
+            </div>
+            <div class="column keys-checkbox">
+                <span>Show Keys</span>
+                <input type="checkbox" checked>
+            </div>
+        </header>
+        <ul class="piano-keys">
+            <li class="key white" data-key="q"><span>q</span></li>
+            <li class="key black" data-key="2"><span>2</span></li>
+            <li class="key white" data-key="w"><span>w</span></li>
+            <li class="key black" data-key="3"><span>3</span></li>
+            <li class="key white" data-key="e"><span>e</span></li>
+            <li class="key white" data-key="r"><span>r</span></li>
+            <li class="key black" data-key="5"><span>5</span></li>
+            <li class="key white" data-key="t"><span>t</span></li>
+            <li class="key black" data-key="6"><span>6</span></li>
+            <li class="key white" data-key="y"><span>y</span></li>
+            <li class="key black" data-key="7"><span>7</span></li>
+            <li class="key white" data-key="u"><span>u</span></li>
+            <li class="key white" data-key="i"><span>i</span></li>
+            <li class="key black" data-key="9"><span>9</span></li>
+            <li class="key white" data-key="o"><span>o</span></li>
+            <li class="key black" data-key="0"><span>0</span></li>
+            <li class="key white" data-key="p"><span>p</span></li>
+            <li class="key white" data-key="z"><span>z</span></li>
+            <li class="key black" data-key="s"><span>s</span></li>
+            <li class="key white" data-key="x"><span>x</span></li>
+            <li class="key black" data-key="d"><span>d</span></li>
+            <li class="key white" data-key="c"><span>c</span></li>
+            <li class="key black" data-key="f"><span>f</span></li>
+            <li class="key white" data-key="v"><span>v</span></li>
+            <li class="key white" data-key="b"><span>b</span></li>
+            <li class="key black" data-key="h"><span>h</span></li>
+            <li class="key white" data-key="n"><span>n</span></li>
+            <li class="key black" data-key="j"><span>j</span></li>
+            <li class="key white" data-key="m"><span>m</span></li>
+        </ul>
+    </div>
+    <div id="hint" style="display: none;"></div>
+</body>
+</html>
