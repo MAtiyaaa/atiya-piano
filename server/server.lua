@@ -6,9 +6,3 @@ AddEventHandler('atiya-piano:PlayWithinDistance', function(maxDistance, note, vo
 
     TriggerClientEvent('atiya-piano:playSoundForNearby', -1, note, volume, playerCoords, src)
 end)
-
-RegisterNetEvent('atiya-piano:StopPlayingPiano')
-AddEventHandler('atiya-piano:StopPlayingPiano', function()
-    local src = source
-    TriggerClientEvent('atiya-piano:StopPlayingPianoForNearby', -1, src)
-end)
