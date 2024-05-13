@@ -49,5 +49,4 @@
 ![Preview 2](https://i.imgur.com/Up5NlKL.png)
 
 # Video
-
-https://streamable.com/frm0qi
+![Video Preview](https://streamable.com/frm0qi)
