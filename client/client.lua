@@ -150,18 +150,6 @@ function GetNearestPianoLocation(coords)
     return nearestLocation
 end
 
---RegisterCommand("debugPiano", function()
-    --TriggerEvent('debugPianoEvent')
---end, false)
-
-
-RegisterNetEvent('debugPianoEvent', function()
-    SetNuiFocus(true, true)
-    SendNUIMessage({
-        action = "startDebugging"
-    })
-end)
-
 Citizen.CreateThread(function()
     for propName, _ in pairs(Config.PropName) do
         RequestModel(GetHashKey(propName))
