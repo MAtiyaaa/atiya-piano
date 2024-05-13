@@ -161,43 +161,6 @@ window.addEventListener('message', function(event) {
     }
 });
 
-const debugDuration = 15000; // 15 seconds
-const pressInterval = 300;
-
-const startDebugging = () => {
-    const startTime = Date.now();
-
-    const interval = setInterval(() => {
-        if (Date.now() - startTime > debugDuration) {
-            clearInterval(interval);
-            console.log("Debugging ended.");
-            return;
-        }
-
-        const randomKeyIndex = Math.floor(Math.random() * allKeys.length);
-        const randomKey = allKeys[randomKeyIndex];
-        
-        // Trigger the key press
-        if (!keyStates[randomKey]) {
-            keyStates[randomKey] = true; // Set the key state as pressed
-            playTune(randomKey); // Play the tune associated with the key
-            setTimeout(() => {
-                keyStates[randomKey] = false; // Reset the key state after a short delay
-            }, pressInterval - 50); // Ensure the key is "released" before the next interval
-        }
-    }, pressInterval);
-
-    console.log("Debugging started.");
-};
-
-// JavaScript
-window.addEventListener('message', function(event) {
-    if (event.data.action === "startDebugging") {
-        startDebugging();  // Call the debugging function when the NUI message is received
-    }
-});
-
-
 document.addEventListener("keydown", handleKeyDown);
 document.addEventListener("keyup", handleKeyUp);
 volumeSlider.addEventListener("input", handleVolume);
