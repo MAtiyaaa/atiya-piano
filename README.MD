@@ -41,3 +41,13 @@
 * Ensure `atiya-piano`, or the folder it's in
 
 * Enjoy!
+
+
+# Images
+
+![Preview 1](https://i.imgur.com/M6i3V79.png)
+![Preview 2](https://i.imgur.com/Up5NlKL.png)
+
+# Video
+
+https://streamable.com/frm0qi
