@@ -2,7 +2,7 @@ Config = {}
 
 Config.Target = "OX" -- "QB", "OX"
 
-Config.AllPianos = true -- true = all pianos, false = only pianos specified in Config.PianoLocations. If true, Config.PianoLocations will be used as spawning extra pianos, or for customized distance.
+Config.AllPianos = true -- true = all pianos, false = only pianos specified in Config.PianoLocations
 
 Config.AudioDistance = "20.0"
 
