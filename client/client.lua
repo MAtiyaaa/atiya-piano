@@ -1,3 +1,69 @@
+local spawnedPianos = {}
+local propHash = GetHashKey(Config.PropName)
+
+RegisterNetEvent('atiya-piano:spawnPiano')
+AddEventHandler('atiya-piano:spawnPiano', function(coords, heading, propHash)
+    local pianoLoc = LoadVector4(coords)
+    local pianoProp = createCustomProp({prop = propHash, coords = pianoLoc, heading = heading}, true, false)
+    spawnedPianos[coords] = { prop = pianoProp, distance = Config.AudioDistance }
+    if Config.Debug then
+        print("Client: Piano spawned at:", coords)
+    end
+end)
+
+RegisterNetEvent('atiya-piano:deletePiano')
+AddEventHandler('atiya-piano:deletePiano', function(coords)
+    local pianoData = spawnedPianos[coords]
+    if pianoData and DoesEntityExist(pianoData.prop) then
+        DeleteObject(pianoData.prop)
+        spawnedPianos[coords] = nil
+        if Config.Debug then
+            print("Client: Piano deleted at:", coords)
+        end
+    end
+end)
+
+AddEventHandler('onResourceStop', function(resourceName)
+    if GetCurrentResourceName() == resourceName then
+        for coords, pianoData in pairs(spawnedPianos) do
+            if DoesEntityExist(pianoData.prop) then
+                DeleteObject(pianoData.prop)
+                if Config.Debug then
+                    print("Client: Piano deleted on resource stop at:", coords)
+                end
+            end
+        end
+        spawnedPianos = {}
+    end
+end)
+
+Citizen.CreateThread(function()
+    TriggerServerEvent('atiya-piano:requestPianos')
+end)
+
+RegisterNetEvent('atiya-piano:playNote')
+AddEventHandler('atiya-piano:playNote', function(note, volume, coords)
+    local soundPath = "nui://xsound/html/sounds/" .. note .. ".ogg"
+    local soundId = "piano_" .. note
+    local audiodistance = Config.AudioDistance
+    exports.xsound:PlayUrlPos(soundId, soundPath, volume, coords, false)
+    exports.xsound:Distance(soundId, audiodistance)
+end)
+
+RegisterNetEvent('atiya-piano:playNoteForEveryone')
+AddEventHandler('atiya-piano:playNoteForEveryone', function(note, volume)
+    local playerCoords = GetEntityCoords(PlayerPedId())
+    local nearestPianoLocation = GetNearestPianoLocation(playerCoords)
+    TriggerServerEvent('atiya-piano:playNote', note, volume, playerCoords)
+end)
+
+RegisterNUICallback('playPianoNote', function(data, cb)
+    local note = data.note
+    local volume = data.volume
+    TriggerEvent('atiya-piano:playNoteForEveryone', note, volume)
+    cb('ok')
+end)
+
 if Config.Target == "QB" then
     exports['qb-target']:AddTargetModel(Config.PropName, {
         options = {
@@ -23,77 +89,8 @@ end
 
 RegisterNetEvent('atiya-piano:client:openPiano')
 AddEventHandler('atiya-piano:client:openPiano', function()
-    if IsNearConfiguredPiano() then
-        SetNuiFocus(true, true)
-        SendNUIMessage({type = 'showPiano'})
-    else
-        return
-    end
-end)
-
-RegisterNUICallback('playPianoNote', function(data, cb)
-    local note = data.note
-    local volume = data.volume
-    local maxDistance = tonumber(tonumber(Config.AudioDistance))
-
-    TriggerServerEvent('atiya-piano:PlayWithinDistance', maxDistance, note, volume)
-    cb('ok')
-end)
-
-RegisterNUICallback('playSound', function(data, cb)
-    local soundFile = data.transactionFile
-    local volume = data.transactionVolume
-
-    SendNUIMessage({
-        transactionType = 'playSound',
-        transactionFile = soundFile,
-        transactionVolume = volume
-    })
-    cb('ok')
-end)
-
-RegisterNetEvent('atiya-piano:playSoundForNearby')
-AddEventHandler('atiya-piano:playSoundForNearby', function(note, volume, sourcePlayerCoords, sourcePlayer)
-    local playerPed = PlayerPedId()
-    local sourcePed = GetPlayerPed(GetPlayerFromServerId(sourcePlayer))
-    local distance = #(GetEntityCoords(playerPed) - sourcePlayerCoords)
-    local maxDistance = tonumber(Config.AudioDistance)
-    local adjustedVolume = volume
-    if Config.AllPianos then
-        local nearestProp = nil
-        local minDistance = math.huge
-        local propHash = GetHashKey(Config.PropName)
-        local nearestPropCandidate = GetClosestObjectOfType(sourcePlayerCoords, maxDistance, propHash, false, false, false)
-        if nearestPropCandidate ~= 0 then
-            local propCoords = GetEntityCoords(nearestPropCandidate)
-            local propDistance = #(sourcePlayerCoords - propCoords)
-            if propDistance < minDistance then
-                minDistance = propDistance
-                nearestProp = nearestPropCandidate
-            end
-        end
-        if nearestProp ~= nil then
-            local propCoords = GetEntityCoords(nearestProp)
-            local propDistance = #(sourcePlayerCoords - propCoords)
-            adjustedVolume = volume * (1 - (propDistance / 10.0))
-        end
-    else
-        local nearestPianoLocation = GetNearestPianoLocation(sourcePlayerCoords)
-        if nearestPianoLocation then
-            local distance = #(sourcePlayerCoords - nearestPianoLocation.coords.xyz)
-            local maxConfigDistance = nearestPianoLocation.distance
-            adjustedVolume = volume * (1 - (distance / maxConfigDistance))
-        end
-    end
-    local receiverDistance = #(GetEntityCoords(playerPed) - sourcePlayerCoords)
-    adjustedVolume = adjustedVolume * (1 - (receiverDistance / maxDistance))
-    if receiverDistance <= maxDistance then
-        SendNUIMessage({
-            transactionType = 'playSound',
-            note = note,
-            volume = adjustedVolume
-        })
-    end
+    SetNuiFocus(true, true)
+    SendNUIMessage({type = 'showPiano'})
 end)
 
 RegisterNUICallback('closePiano', function(data, cb)
@@ -102,101 +99,40 @@ RegisterNUICallback('closePiano', function(data, cb)
     cb('ok')
 end)
 
-function IsNearConfiguredPiano()
-    local playerCoords = GetEntityCoords(PlayerPedId())
-    local maxDistance = tonumber(Config.AudioDistance)
-    local propHash = GetHashKey(Config.PropName)
-    local nearestProp = GetClosestObjectOfType(playerCoords, maxDistance, propHash, false, false, false)
-    if nearestProp ~= 0 then
-        return true
-    end
-    return false
-end
-
 function GetNearestPianoLocation(coords)
     local nearestLocation = nil
     local minDistance = math.huge
-    if Config.AllPianos then
-        local propHash = GetHashKey(Config.PropName)
-        local nearestProp = GetClosestObjectOfType(coords, tonumber(Config.AudioDistance), propHash, false, false, false)
-        if nearestProp ~= 0 then
-            local propCoords = GetEntityCoords(nearestProp)
-            local distance = #(coords - propCoords)
-            if distance < minDistance then
-                minDistance = distance
-                nearestLocation = { coords = vector4(propCoords.x, propCoords.y, propCoords.z, GetEntityHeading(nearestProp)), distance = tonumber(Config.AudioDistance), prop = propName }
-            end
-        end
-    else
-        for _, pianoLocation in ipairs(Config.PianoLocations) do
-            local distance = #(coords - vector3(pianoLocation.coords.x, pianoLocation.coords.y, pianoLocation.coords.z))
-            if distance < minDistance then
-                minDistance = distance
-                nearestLocation = pianoLocation
-            end
+    for _, pianoData in ipairs(Config.PianoLocations) do
+        local pianoLocation = LoadVector4(pianoData.coords)
+        local distance = Vdist(coords.x, coords.y, coords.z, pianoLocation.x, pianoLocation.y, pianoLocation.z)
+        if distance < minDistance then
+            minDistance = distance
+            nearestLocation = pianoLocation
         end
     end
     return nearestLocation
 end
 
-function LoadVector4(vectorString)
-    local x, y, z, w = vectorString:match("vector4%(([%-0-9%.]+), ([%-0-9%.]+), ([%-0-9%.]+), ([%-0-9%.]+)%)")
-    return vector4(tonumber(x), tonumber(y), tonumber(z), tonumber(w))
+function LoadVector4(str)
+    local x, y, z, w = str:match("([^,]+),%s*([^,]+),%s*([^,]+),%s*([^,]+)")
+    if x and y and z and w then
+        return vector4(tonumber(x), tonumber(y), tonumber(z), tonumber(w))
+    else
+        if Config.Debug then
+            print("Failed to parse vector4 from string:", str)
+        end
+        return nil
+    end
 end
 
-Citizen.CreateThread(function()
-    RequestModel(GetHashKey(Config.PropName))
-    while true do
-        Citizen.Wait(1000)
-        if Config.AllPianos then
-            local existingPianos = GetGamePool("CObject")
-            for _, piano in ipairs(existingPianos) do
-                local model = GetEntityModel(piano)
-                if model == GetHashKey(Config.PropName) then
-                else
-                    DeleteObject(piano)
-                end
-            end
-            local propHash = GetHashKey(Config.PropName)
-            local pianoCoords = GetEntityCoords(GetClosestObjectOfType(GetEntityCoords(PlayerPedId()), 50.0, propHash, false, false, false))
-            if not DoesObjectOfTypeExistAtCoords(pianoCoords, 0.5, propHash, true) then
-                local pianoProp = CreateObject(propHash, pianoCoords, true, false, false)
-                FreezeEntityPosition(pianoProp, true)
-            end
-            for _, pianoLocStr in ipairs(Config.PianoLocations) do
-                local pianoLoc = LoadVector4(pianoLocStr)
-                local propHash = GetHashKey(Config.PropName)
-                if not DoesObjectOfTypeExistAtCoords(pianoLoc, 0.5, propHash, true) then
-                    local pianoProp = CreateObject(propHash, pianoLoc.x, pianoLoc.y, pianoLoc.z, true, false, false)
-                    SetEntityHeading(pianoProp, pianoLoc.w)
-                    FreezeEntityPosition(pianoProp, true)
-                end
-            end
-        else
-            local existingPianos = GetGamePool("CObject")
-            for _, piano in ipairs(existingPianos) do
-                local model = GetEntityModel(piano)
-                local shouldDelete = true
-                for _, pianoLocStr in ipairs(Config.PianoLocations) do
-                    local pianoLoc = LoadVector4(pianoLocStr)
-                    if GetHashKey(Config.PropName) == model then
-                        shouldDelete = false
-                        break
-                    end
-                end
-                if shouldDelete then
-                    DeleteObject(piano)
-                end
-            end
-            for _, pianoLocStr in ipairs(Config.PianoLocations) do
-                local pianoLoc = LoadVector4(pianoLocStr)
-                local propHash = GetHashKey(Config.PropName)
-                if not DoesObjectOfTypeExistAtCoords(pianoLoc, 0.5, propHash, true) then
-                    local pianoProp = CreateObject(propHash, pianoLoc.x, pianoLoc.y, pianoLoc.z, true, false, false)
-                    SetEntityHeading(pianoProp, pianoLoc.w)
-                    FreezeEntityPosition(pianoProp, true)
-                end
-            end
-        end
-    end
-end)
+if Config.Debug then
+    RegisterCommand("debugPiano", function()
+        TriggerEvent('debugPianoEvent')
+    end, false)
+    RegisterNetEvent('debugPianoEvent', function()
+        SetNuiFocus(true, true)
+        SendNUIMessage({
+            action = "startDebugging"
+        })
+    end)
+end
