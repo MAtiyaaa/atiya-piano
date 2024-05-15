@@ -1,4 +1,5 @@
 local propHash = GetHashKey(Config.PropName)
+local benchHash = GetHashKey(Config.BenchName)
 local spawnedPianos = {}
 
 RegisterNetEvent('atiya-piano:playNote')
@@ -9,8 +10,8 @@ end)
 function loadServerPianos()
     for _, pianoData in ipairs(Config.PianoLocations) do
         if not spawnedPianos[pianoData.coords] then
-            spawnedPianos[pianoData.coords] = {coords = pianoData.coords, heading = pianoData.heading}
-            TriggerClientEvent('atiya-piano:spawnPiano', -1, pianoData.coords, pianoData.heading, propHash)
+            spawnedPianos[pianoData.coords] = { coords = pianoData.coords, heading = pianoData.heading }
+            TriggerClientEvent('atiya-piano:spawnPiano', -1, pianoData.coords, pianoData.heading, propHash, benchHash)
             if Config.Debug then
                 print("Server: Piano data sent for spawning at:", pianoData.coords)
             end
@@ -22,7 +23,7 @@ function deleteServerPianos()
     for locStr, _ in pairs(spawnedPianos) do
         TriggerClientEvent('atiya-piano:deletePiano', -1, locStr)
         if Config.Debug then
-            print("Server: Piano delete signal sent for:", locStr)
+            print("Server: Piano delete sent for:", locStr)
         end
     end
     spawnedPianos = {}
@@ -44,6 +45,6 @@ RegisterNetEvent('atiya-piano:requestPianos')
 AddEventHandler('atiya-piano:requestPianos', function()
     local _source = source
     for coords, pianoData in pairs(spawnedPianos) do
-        TriggerClientEvent('atiya-piano:spawnPiano', _source, coords, pianoData.heading, propHash)
+        TriggerClientEvent('atiya-piano:spawnPiano', _source, coords, pianoData.heading, propHash, benchHash)
     end
 end)
