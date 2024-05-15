@@ -6,25 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Piano</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="piano.ico" rel="icon">
     <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.1/howler.min.js"></script>
     <script src="script.js" defer></script>
-    <script>
-        var audioPlayer = null;
-        window.addEventListener('message', function(event) {
-            if (event.data.transactionType == "playSound") {
-                if (audioPlayer && typeof audioPlayer.stop === 'function') {
-                    audioPlayer.stop();
-                }
-                audioPlayer = new Howl({
-                    src: ["./notes/" + event.data.transactionFile + ".mp3"]
-                });
-                audioPlayer.volume(event.data.transactionVolume);
-                audioPlayer.play();
-            }
-        });
-    </script>
 </head>
 <body>
     <div class="wrapper" style="display: none;">
