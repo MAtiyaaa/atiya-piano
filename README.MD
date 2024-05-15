@@ -6,7 +6,8 @@
 
 * Github: [MAtiyaaa](https://github.com/MAtiyaaa)
 
-* [Join the Discord](https://discord.gg/GyeRexYR35)
+* Join the [Discord](https://discord.gg/GyeRexYR35)
+ 
   
 
 # Description
@@ -24,6 +25,7 @@
   
 
 # Dependencies
+* [XSound](https://github.com/Xogy/xsound)
 
 * [QB-Target](https://github.com/qbcore-framework/qb-target)
 
@@ -35,19 +37,22 @@
 
 # Installation
 
-* Literally a drag and drop but this is for those who aren't as familiar.
-
 * Add `atiya-piano` to your resources folder
 
 * Ensure `atiya-piano`, or the folder it's in
 
+* Drag all the contents of the `[INSTALL]` folder into xsound/html/sounds
+
 * Enjoy!
+
 
 
 # Images
 
 ![Preview 1](https://i.imgur.com/M6i3V79.png)
 ![Preview 2](https://i.imgur.com/Up5NlKL.png)
+
+
 
 # Video
 [Video Preview](https://streamable.com/frm0qi)
