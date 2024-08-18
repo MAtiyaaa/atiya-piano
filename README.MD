@@ -1,4 +1,4 @@
-# FiveM Piano Script
+# FiveM Piano Script [Standalone]
 
 * Made by Atiya
 
